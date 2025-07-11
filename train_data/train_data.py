@@ -2,30 +2,36 @@ import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-import matplotlib.pyplot as plt
 
 # ========================================
 # CONFIG
 # ========================================
+
 INPUT_FILE = 'output_features_v2.csv'
 N_SPLITS = 5
 
-print("\nSTEP 1: Data Load...")
+MAX_DEPTH = 4          
+LEARNING_RATE = 0.03   
+N_ESTIMATORS = 300     
+
+THRESHOLD = 0.4        
+
+# ========================================
+# STEP 1: Load Data
+# ========================================
+
+print("\nSTEP 1: Data Load kar rahe hain...")
 df = pd.read_csv(INPUT_FILE, parse_dates=['Date'])
 df = df.sort_values('Date').reset_index(drop=True)
-
 print(f"Total rows: {df.shape[0]}")
 
 # ========================================
-# STEP 2: Features & Target
+# STEP 2: X aur y Split
 # ========================================
+
 print("\nSTEP 2: X aur y split...")
 
-feature_cols = [
-    'Return_1min', 'Return_3min', 'Return_5min',
-    'SMA_5', 'SMA_10', 'EMA_5', 'EMA_10', 'RSI_14',
-    'Range', 'VWAP_Diff', 'Volume_SMA_10'  # ✅ Body aur Vol_Spike hata diya
-]
+feature_cols = ['Return_1min', 'Return_3min', 'Return_5min', 'SMA_5', 'SMA_10', 'EMA_5', 'EMA_10', 'RSI_14', 'Range', 'VWAP_Diff', 'Volume_SMA_10']
 
 X = df[feature_cols]
 y = df['Label']
@@ -33,8 +39,10 @@ y = df['Label']
 print(f"X shape: {X.shape} | y shape: {y.shape}")
 
 # ========================================
-# STEP 3: TimeSeriesSplit
+# STEP 3: TimeSeriesSplit Setup
 # ========================================
+
+print(f"\nSTEP 3: TimeSeriesSplit setup, Splits: {N_SPLITS} ...")
 tscv = TimeSeriesSplit(n_splits=N_SPLITS)
 
 fold = 1
@@ -47,15 +55,16 @@ for train_idx, test_idx in tscv.split(X):
     y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
     # ========================================
-    # STEP 4: XGBoost with tuned hyperparameters
+    # STEP 4: XGBoost Train with Tuning
     # ========================================
+
     model = XGBClassifier(
         objective='binary:logistic',
         eval_metric='logloss',
         use_label_encoder=False,
-        learning_rate=0.05,
-        max_depth=4,
-        n_estimators=200,
+        max_depth=MAX_DEPTH,
+        learning_rate=LEARNING_RATE,
+        n_estimators=N_ESTIMATORS,
         subsample=0.8,
         colsample_bytree=0.8
     )
@@ -63,8 +72,9 @@ for train_idx, test_idx in tscv.split(X):
     model.fit(X_train, y_train)
 
     # ========================================
-    # STEP 5A: Default prediction
+    # STEP 5A: Predict (Default 0.5)
     # ========================================
+
     y_pred_default = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred_default)
     accuracy_list.append(acc)
@@ -75,33 +85,23 @@ for train_idx, test_idx in tscv.split(X):
     print(classification_report(y_test, y_pred_default))
 
     # ========================================
-    # STEP 5B: Threshold tuning
+    # STEP 5B: Predict (Custom threshold 0.4)
     # ========================================
-    y_proba = model.predict_proba(X_test)[:, 1]
-    custom_threshold = 0.4
-    y_pred_custom = (y_proba > custom_threshold).astype(int)
 
-    print(f"✅ Confusion Matrix (Custom Threshold={custom_threshold}):")
+    y_proba = model.predict_proba(X_test)[:, 1]
+    y_pred_custom = (y_proba > THRESHOLD).astype(int)
+
+    print(f"✅ Confusion Matrix (Custom Threshold={THRESHOLD}):")
     print(confusion_matrix(y_test, y_pred_custom))
     print(classification_report(y_test, y_pred_custom))
-
-    # ========================================
-    # STEP 5C: Feature Importance
-    # ========================================
-    importances = model.feature_importances_
-    print("📊 Feature Importances:")
-    for col, score in zip(feature_cols, importances):
-        print(f"{col}: {score:.4f}")
-
-    plt.figure(figsize=(8,6))
-    plt.barh(feature_cols, importances)
-    plt.title(f"Feature Importance Fold {fold}")
-    plt.show()
 
     fold += 1
 
 # ========================================
-# STEP 6: Final Accuracy
+# STEP 5: Average Accuracy
 # ========================================
+
 print("\n✅ Walk-forward test complete!")
 print(f"✅ Average Accuracy: {sum(accuracy_list)/len(accuracy_list):.4f}")
+
+print(f"\n📌 Tuning used → max_depth: {MAX_DEPTH} | learning_rate: {LEARNING_RATE} | n_estimators: {N_ESTIMATORS} | threshold: {THRESHOLD}")
