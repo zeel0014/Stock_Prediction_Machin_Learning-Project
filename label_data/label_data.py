@@ -1,7 +1,7 @@
 import pandas as pd
 
-INPUT_FILE = 'data/output_cleaned.csv'   
-OUTPUT_FILE = 'data/output_label.csv'    
+INPUT_FILE = r'C:\Users\SPC11\Desktop\Projects\stock_prediction\preprocessing_and_cleaning\output_cleaned.csv'   
+OUTPUT_FILE = 'output_label.csv'    
 THRESHOLD = 0.0002  
 
 # ========================================
@@ -47,7 +47,7 @@ df = df.drop(index=last_indexes).reset_index(drop=True)
 # ========================================
 print("STEP 5: Saving labeled data...")
 
-final_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'VWAP', 'Label']  # ✅ Return हटाया
+final_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'VWAP', 'Label']  
 df[final_columns].to_csv(OUTPUT_FILE, index=False)
 
 print(f"\n✅ Labeled data saved to: {OUTPUT_FILE}")

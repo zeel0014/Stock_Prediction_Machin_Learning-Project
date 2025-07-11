@@ -1,11 +1,7 @@
 import pandas as pd
 
-# ================================
-# CONFIG
-# ================================
-
-INPUT_FILE = 'data/output_label.csv'
-OUTPUT_FILE = 'data/output_features.csv'
+INPUT_FILE = r'C:\Users\SPC11\Desktop\Projects\stock_prediction\label_data\label_add.csv'
+OUTPUT_FILE = 'output_features.csv'
 
 # ================================
 # STEP 1: Load labeled data
@@ -46,6 +42,23 @@ loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
 rs = gain / loss
 df['RSI_14'] = 100 - (100 / (1 + rs))
 
+print("STEP 2: Creating new OHLCV-derived features...")
+
+# Body = Close - Open
+df['Body'] = df['Close'] - df['Open']
+
+# Range = High - Low
+df['Range'] = df['High'] - df['Low']
+
+# VWAP_Diff = Close - VWAP
+df['VWAP_Diff'] = df['Close'] - df['VWAP']
+
+# Volume SMA 10
+df['Volume_SMA_10'] = df['Volume'].rolling(window=10).mean()
+
+# Volume Spike = Volume / Volume_SMA_10
+df['Vol_Spike'] = df['Volume'] / df['Volume_SMA_10']
+
 # ================================
 # STEP 5: Drop rows with NaN
 # ================================
@@ -58,8 +71,8 @@ df = df.dropna().reset_index(drop=True)
 keep_cols = [
     'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'VWAP',
     'Return_1min', 'Return_3min', 'Return_5min',
-    'SMA_5', 'SMA_10', 'EMA_5', 'EMA_10',
-    'RSI_14',
+    'SMA_5', 'SMA_10', 'EMA_5', 'EMA_10', 'RSI_14',
+    'Body', 'Range', 'VWAP_Diff', 'Volume_SMA_10', 'Vol_Spike',
     'Label'
 ]
 

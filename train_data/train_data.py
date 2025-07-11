@@ -1,13 +1,14 @@
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
-from xgboost import XGBClassifier
+from xgboost import XGBClassifier # type: ignore
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import joblib
 
 # ========================================
 # CONFIG
 # ========================================
 
-INPUT_FILE = 'output_features_v2.csv'
+INPUT_FILE = r'C:\Users\SPC11\Desktop\Projects\stock_prediction\feature_engineer\output_features.csv'
 N_SPLITS = 5
 
 MAX_DEPTH = 4          
@@ -105,3 +106,8 @@ print("\n✅ Walk-forward test complete!")
 print(f"✅ Average Accuracy: {sum(accuracy_list)/len(accuracy_list):.4f}")
 
 print(f"\n📌 Tuning used → max_depth: {MAX_DEPTH} | learning_rate: {LEARNING_RATE} | n_estimators: {N_ESTIMATORS} | threshold: {THRESHOLD}")
+
+# Assume 'model' naam ka tera tuned XGBClassifier hai
+joblib.dump(model, "xgb_model_final.pkl")
+print("✅ Final model saved: xgb_model_final.pkl")
+

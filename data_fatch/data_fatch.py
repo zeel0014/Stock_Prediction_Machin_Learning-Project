@@ -1,7 +1,7 @@
 import os
 import requests
 import pandas as pd
-import pandas_market_calendars as mcal
+import pandas_market_calendars as mcal  # type: ignore
 from datetime import datetime, timedelta
 import time
 import sys
@@ -11,13 +11,13 @@ import pytz
 #        CONFIGURATION           #
 # ============================== #
 
-API_KEY = "NyENoHksPMSLaZQUv6fj8IgDGxZrFpDj"         # Replace with your actual Polygon.io API key
+API_KEY = "NyENoHksPMSLaZQUv6fj8IgDGxZrFpDj"        
 TICKER = "AAPL"
 TIMEFRAME = "minute"
 MAX_LIMIT = 50000
 FINAL_COLUMNS = ["Date", "Open", "High", "Low", "Close", "Volume", "VWAP"]
 URL_PATTERN = f"https://api.polygon.io/v2/aggs/ticker/{TICKER}/range/1/{TIMEFRAME}"
-OUTPUT_FILE = f"data/{TICKER}_{TIMEFRAME}_2years.csv"
+OUTPUT_FILE = f"{TICKER}_{TIMEFRAME}_fatch_data.csv"
 
 # ============================== #
 #         UTILITY FUNCS          #
@@ -105,7 +105,7 @@ def main():
                 if requests_this_minute >= 5:
                     elapsed = time.time() - minute_start_time
                     if elapsed < 60:
-                        sleep_time = 60 - elapsed + 1  # Add 1 sec buffer
+                        sleep_time = 60 - elapsed + 1  
                         print(f"⏳ Rate limit hit. Sleeping for {sleep_time:.2f} seconds...")
                         time.sleep(sleep_time)
                     requests_this_minute = 0
@@ -155,7 +155,6 @@ def main():
         if all_data:
             new_df = pd.concat(all_data, ignore_index=True)
             new_df = new_df[FINAL_COLUMNS]
-
 
             combined_df = pd.concat([existing_df, new_df], ignore_index=True)
             combined_df.drop_duplicates(subset=["Date"], inplace=True)

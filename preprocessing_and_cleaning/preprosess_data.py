@@ -1,7 +1,7 @@
 import pandas as pd
 
-INPUT_FILE = 'data/AAPL_minute_2years.csv'  
-OUTPUT_FILE = 'data/output_cleaned.csv'
+INPUT_FILE = r'C:\Users\SPC11\Desktop\Projects\stock_prediction\data_fatch\AAPL_minute_2years.csv.csv'  # Adjust the path as needed
+OUTPUT_FILE = 'output_cleaned.csv'
 
 # ========================
 # STEP 1: Load Data
